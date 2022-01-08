@@ -49,6 +49,15 @@ public:
 		delete[] tree;
 	}
 
+	// Copy Constructor
+	WahlBinaryTree(const WahlBinaryTree<T>& _tree) {
+		tree = new node<T>[_tree.nodeCount];
+		tree[ROOT].parent = MAX_USHORT;
+		nodeCount = _tree.nodeCount;
+
+		memcpy(tree, _tree.tree, sizeof(node<T>) * nodeCount);
+	}
+
 	// Create a new leaf and return the index. If fails, return 0
 	unsigned short createLeaf(bool right) {
 		unsigned short newIndex = findFirstEmptySpace();
@@ -78,18 +87,40 @@ public:
 	}
 
 	// Recursively go down the binary tree and reset leaves from the starting leaf
-	void destroySubtree(unsigned short leaf) { // Test me
-		if (tree[leaf].children[0]) {
-			destroySubtree(tree[leaf].children[0]);
+	// Resets currentNode to parent of destroyed subtree
+	void destroySubtree() {
+		if (tree[currentNode].children[0]) {
+			destroyCertainSubtree(tree[currentNode].children[0]);
 		}
 
-		if (tree[leaf].children[1]) {
-			destroySubtree(tree[leaf].children[1]);
+		if (tree[currentNode].children[1]) {
+			destroyCertainSubtree(tree[currentNode].children[1]);
 		}
 
-		tree[leaf].parent = MAX_USHORT;
-		tree[leaf].children[0] = 0;
-		tree[leaf].children[1] = 0;
+		currentNode = tree[currentNode].parent;
+		tree[currentNode].parent = MAX_USHORT;
+		tree[currentNode].children[0] = 0;
+		tree[currentNode].children[1] = 0;
+		tree[currentNode].data = 0;
+
+	}
+
+	// Recursively go down the binary tree and reset leaves from the starting leaf
+	// Resets currentNode to parent of destroyed subtree
+	void destroyCertainSubtree(unsigned short index) { // Test me
+		if (tree[index].children[0]) {
+			destroyCertainSubtree(tree[index].children[0]);
+		}
+
+		if (tree[index].children[1]) {
+			destroyCertainSubtree(tree[index].children[1]);
+		}
+
+		currentNode = tree[index].parent;
+		tree[index].parent = MAX_USHORT;
+		tree[index].children[0] = 0;
+		tree[index].children[1] = 0;
+		tree[index].data = 0;
 
 	}
 
@@ -119,6 +150,15 @@ public:
 	// Return the T type data value at currentNode
 	T getLeaf() {
 		return tree[currentNode].data;
+	}
+
+	// Return the T type data value at a certain node
+	T getCertainLeaf(unsigned short index) {
+		if (isNode(index)) {
+			return tree[index].data;
+		}
+
+		return 0;
 	}
 	
 	// Sets currentNode's data to _data
@@ -259,5 +299,3 @@ private:
 	}
 
 };
-
-// template class WahlBinaryTree<int>
